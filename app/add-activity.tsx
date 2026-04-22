@@ -147,15 +147,18 @@ export default function AddActivityScreen() {
                     setCategoryId(category.id);
                   }}
                 >
-                  <Text
-                    style={[
-                      styles.optionText,
-                      categoryId === category.id && styles.optionTextSelected,
-                      { color: categoryId === category.id ? theme.primary : theme.text },
-                    ]}
-                  >
-                    {category.name}
-                  </Text>
+                  <View style={styles.categoryOptionContent}>
+                    <View style={[styles.colorDot, { backgroundColor: category.color }]} />
+                    <Text
+                      style={[
+                        styles.optionText,
+                        categoryId === category.id && styles.optionTextSelected,
+                        { color: categoryId === category.id ? theme.primary : theme.text },
+                      ]}
+                    >
+                      {category.name}
+                    </Text>
+                  </View>
                 </Pressable>
               ))}
             </View>
@@ -274,6 +277,16 @@ const styles = StyleSheet.create({
   optionTextSelected: {
     color: '#FF6B6B',
     fontWeight: '600',
+  },
+  categoryOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  colorDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
   input: {
     borderWidth: 1.5,

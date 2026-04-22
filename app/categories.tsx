@@ -58,13 +58,21 @@ export default function CategoriesScreen() {
           <View style={[styles.card, { backgroundColor: `${item.color}33`, borderColor: theme.border }]}>
             <Text style={styles.emoji}>🍹</Text>
             <Text style={[styles.name, { color: theme.text }]}>{item.name}</Text>
+            <View style={styles.cardActions}>
+              <Pressable
+                style={({ pressed }) => [styles.editButton, { backgroundColor: theme.primary, opacity: pressed ? 0.85 : 1 }]}
+                onPress={() => router.push(`/edit-category?id=${item.id}`)}
+              >
+                <Text style={styles.deleteText}>Edit</Text>
+              </Pressable>
 
-            <Pressable
-              style={({ pressed }) => [styles.deleteButton, { backgroundColor: theme.danger, opacity: pressed ? 0.85 : 1 }]}
-              onPress={() => void handleDeleteCategory(item.id)}
-            >
-              <Text style={styles.deleteText}>Delete</Text>
-            </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.deleteButton, { backgroundColor: theme.danger, opacity: pressed ? 0.85 : 1 }]}
+                onPress={() => void handleDeleteCategory(item.id)}
+              >
+                <Text style={styles.deleteText}>Delete</Text>
+              </Pressable>
+            </View>
           </View>
         )}
       />
@@ -114,12 +122,25 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     textAlign: 'center',
   },
+  cardActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 6,
+  },
+  editButton: {
+    alignSelf: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 14,
+    minWidth: 70,
+    alignItems: 'center',
+  },
   deleteButton: {
     alignSelf: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 14,
-    minWidth: 88,
+    minWidth: 70,
     alignItems: 'center',
   },
   deleteText: {

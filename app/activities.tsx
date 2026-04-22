@@ -23,6 +23,7 @@ type ActivityRow = {
   id: number;
   tripName: string;
   categoryName: string;
+  categoryColor: string;
   date: string;
   duration: number;
   notes: string | null;
@@ -40,6 +41,7 @@ export default function ActivitiesScreen() {
         id: activitiesTable.id,
         tripName: tripsTable.name,
         categoryName: categoriesTable.name,
+        categoryColor: categoriesTable.color,
         date: activitiesTable.date,
         duration: activitiesTable.duration,
         notes: activitiesTable.notes,
@@ -83,7 +85,11 @@ export default function ActivitiesScreen() {
         renderItem={({ item }) => (
           <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Text style={[styles.title, { color: theme.text }]}>{item.tripName}</Text>
-            <Text style={[styles.meta, { color: theme.subtext }]}>Category: {item.categoryName}</Text>
+            <View style={styles.metaRow}>
+              <Text style={[styles.meta, { color: theme.subtext }]}>Category:</Text>
+              <View style={[styles.colorDot, { backgroundColor: item.categoryColor }]} />
+              <Text style={[styles.meta, { color: theme.subtext }]}>{item.categoryName}</Text>
+            </View>
             <Text style={[styles.meta, { color: theme.subtext }]}>Date: {item.date}</Text>
             <Text style={[styles.meta, { color: theme.subtext }]}>Duration: {item.duration} mins</Text>
             <Text style={[styles.meta, { color: theme.subtext }]}>Notes: {item.notes || '-'}</Text>
@@ -143,6 +149,17 @@ const styles = StyleSheet.create({
   meta: {
     color: '#374151',
     marginBottom: 2,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
+  colorDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
   cardActions: {
     marginTop: 10,
