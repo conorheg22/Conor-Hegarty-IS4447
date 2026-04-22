@@ -15,6 +15,8 @@ export default function RootLayout() {
       <Stack.Screen name="edit-trip" options={{ title: 'Edit Trip' }} />
       <Stack.Screen name="categories" options={{ title: 'Categories' }} />
       <Stack.Screen name="add-category" options={{ title: 'Add Category' }} />
+      <Stack.Screen name="activities" options={{ title: 'Activities' }} />
+      <Stack.Screen name="add-activity" options={{ title: 'Add Activity' }} />
     </Stack>
   );
 }
