@@ -8,6 +8,9 @@ export default function HomeScreen() {
       <Link href="/trips" style={styles.link}>
         Go to Trips
       </Link>
+      <Link href="/categories" style={styles.link}>
+        Go to Categories
+      </Link>
     </View>
   );
 }
