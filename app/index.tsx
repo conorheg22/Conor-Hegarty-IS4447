@@ -14,6 +14,12 @@ export default function HomeScreen() {
       <Link href="/activities" style={styles.link}>
         Go to Activities
       </Link>
+      <Link href="/targets" style={styles.link}>
+        Go to Targets
+      </Link>
+      <Link href="/insights" style={styles.link}>
+        Go to Insights
+      </Link>
     </View>
   );
 }
