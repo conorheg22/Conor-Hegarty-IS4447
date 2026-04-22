@@ -87,13 +87,20 @@ export default function ActivitiesScreen() {
             <Text style={[styles.meta, { color: theme.subtext }]}>Date: {item.date}</Text>
             <Text style={[styles.meta, { color: theme.subtext }]}>Duration: {item.duration} mins</Text>
             <Text style={[styles.meta, { color: theme.subtext }]}>Notes: {item.notes || '-'}</Text>
-
-            <Pressable
-              style={({ pressed }) => [styles.deleteButton, { backgroundColor: theme.danger, opacity: pressed ? 0.85 : 1 }]}
-              onPress={() => void handleDeleteActivity(item.id)}
-            >
-              <Text style={styles.deleteText}>Delete</Text>
-            </Pressable>
+            <View style={styles.cardActions}>
+              <Pressable
+                style={({ pressed }) => [styles.actionButton, { backgroundColor: theme.primary, opacity: pressed ? 0.85 : 1 }]}
+                onPress={() => router.push(`/edit-activity?id=${item.id}`)}
+              >
+                <Text style={styles.deleteText}>Edit</Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.actionButton, { backgroundColor: theme.danger, opacity: pressed ? 0.85 : 1 }]}
+                onPress={() => void handleDeleteActivity(item.id)}
+              >
+                <Text style={styles.deleteText}>Delete</Text>
+              </Pressable>
+            </View>
           </View>
         )}
       />
@@ -137,13 +144,19 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginBottom: 2,
   },
-  deleteButton: {
+  cardActions: {
+    marginTop: 10,
+    flexDirection: 'row',
+    gap: 10,
+  },
+  actionButton: {
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     height: 40,
     borderRadius: 14,
     justifyContent: 'center',
-    marginTop: 10,
+    minWidth: 84,
+    alignItems: 'center',
   },
   deleteText: {
     color: '#fff',
