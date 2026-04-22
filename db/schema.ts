@@ -28,7 +28,14 @@ export const activities = sqliteTable('activities', {
 
 export const targets = sqliteTable('targets', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  type: text('type').notNull(), // weekly | monthly
+  type: text('type').notNull(),
   value: integer('value').notNull(),
   categoryId: integer('category_id').references(() => categories.id),
+});
+
+export const users = sqliteTable('users', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  username: text('username').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  createdAt: text('created_at').notNull(),
 });
