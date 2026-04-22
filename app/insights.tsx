@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
 import { eq } from 'drizzle-orm';
 import { BarChart } from 'react-native-chart-kit';
 import { db } from '../db/db';

@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
+  Alert,
   Pressable,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -51,6 +53,7 @@ export default function AddActivityScreen() {
   }, []);
 
   async function handleSubmit() {
+    console.log('[add-activity] submit pressed');
     const durationValue = Number(duration);
     if (
       !tripId ||
@@ -59,6 +62,8 @@ export default function AddActivityScreen() {
       !Number.isFinite(durationValue) ||
       durationValue <= 0
     ) {
+      console.log('[add-activity] invalid form values');
+      Alert.alert('Invalid input', 'Please complete all required fields.');
       return;
     }
 
@@ -75,7 +80,11 @@ export default function AddActivityScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.form}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.form}>
         <Text style={styles.label}>Trip</Text>
         <View style={styles.optionsRow}>
           {trips.map((trip) => (
@@ -85,7 +94,10 @@ export default function AddActivityScreen() {
                 styles.optionButton,
                 tripId === trip.id && styles.optionButtonSelected,
               ]}
-              onPress={() => setTripId(trip.id)}
+              onPress={() => {
+                console.log('[add-activity] trip selected', trip.id);
+                setTripId(trip.id);
+              }}
             >
               <Text
                 style={[
@@ -108,7 +120,10 @@ export default function AddActivityScreen() {
                 styles.optionButton,
                 categoryId === category.id && styles.optionButtonSelected,
               ]}
-              onPress={() => setCategoryId(category.id)}
+              onPress={() => {
+                console.log('[add-activity] category selected', category.id);
+                setCategoryId(category.id);
+              }}
             >
               <Text
                 style={[
@@ -147,10 +162,14 @@ export default function AddActivityScreen() {
           placeholder="Optional notes"
         />
 
-        <Pressable style={styles.submitButton} onPress={() => void handleSubmit()}>
+        <Pressable
+          style={styles.submitButton}
+          onPress={() => void handleSubmit()}
+        >
           <Text style={styles.submitText}>Save Activity</Text>
         </Pressable>
-      </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -159,6 +178,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  content: {
     padding: 16,
   },
   form: {
