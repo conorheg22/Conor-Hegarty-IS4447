@@ -16,6 +16,8 @@ import {
   categories as categoriesTable,
   trips as tripsTable,
 } from '../db/schema';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/Colors';
 
 type ActivityRow = {
   id: number;
@@ -28,6 +30,8 @@ type ActivityRow = {
 
 export default function ActivitiesScreen() {
   const router = useRouter();
+  const scheme = useColorScheme() ?? 'light';
+  const theme = Colors[scheme];
   const [activityList, setActivityList] = useState<ActivityRow[]>([]);
 
   const loadActivities = useCallback(async () => {
@@ -64,28 +68,28 @@ export default function ActivitiesScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <Pressable
-        style={styles.addButton}
+        style={({ pressed }) => [styles.addButton, { backgroundColor: theme.primary, opacity: pressed ? 0.85 : 1 }]}
         onPress={() => router.push('/add-activity')}
       >
-        <Text style={styles.addButtonText}>Add Activity</Text>
+        <Text style={styles.addButtonText}>Add Activity ✈️</Text>
       </Pressable>
 
       <FlatList
         data={activityList}
         keyExtractor={(item) => String(item.id)}
-        ListEmptyComponent={<Text style={styles.emptyText}>No activities yet.</Text>}
+        ListEmptyComponent={<Text style={[styles.emptyText, { color: theme.subtext }]}>No activities yet 🌺</Text>}
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.title}>{item.tripName}</Text>
-            <Text style={styles.meta}>Category: {item.categoryName}</Text>
-            <Text style={styles.meta}>Date: {item.date}</Text>
-            <Text style={styles.meta}>Duration: {item.duration} mins</Text>
-            <Text style={styles.meta}>Notes: {item.notes || '-'}</Text>
+          <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={[styles.title, { color: theme.text }]}>{item.tripName}</Text>
+            <Text style={[styles.meta, { color: theme.subtext }]}>Category: {item.categoryName}</Text>
+            <Text style={[styles.meta, { color: theme.subtext }]}>Date: {item.date}</Text>
+            <Text style={[styles.meta, { color: theme.subtext }]}>Duration: {item.duration} mins</Text>
+            <Text style={[styles.meta, { color: theme.subtext }]}>Notes: {item.notes || '-'}</Text>
 
             <Pressable
-              style={styles.deleteButton}
+              style={({ pressed }) => [styles.deleteButton, { backgroundColor: theme.danger, opacity: pressed ? 0.85 : 1 }]}
               onPress={() => void handleDeleteActivity(item.id)}
             >
               <Text style={styles.deleteText}>Delete</Text>
@@ -100,16 +104,15 @@ export default function ActivitiesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 16,
   },
   addButton: {
     alignSelf: 'flex-start',
-    backgroundColor: '#2563EB',
+    height: 52,
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 14,
     marginBottom: 14,
+    justifyContent: 'center',
   },
   addButtonText: {
     color: '#fff',
@@ -121,8 +124,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 10,
+    borderRadius: 16,
     padding: 12,
     marginBottom: 10,
   },
@@ -137,10 +139,10 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     alignSelf: 'flex-start',
-    backgroundColor: '#DC2626',
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    height: 40,
+    borderRadius: 14,
+    justifyContent: 'center',
     marginTop: 10,
   },
   deleteText: {

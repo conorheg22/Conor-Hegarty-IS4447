@@ -10,12 +10,16 @@ import {
 } from 'react-native';
 import { db } from '../db/db';
 import { categories, targets } from '../db/schema';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/Colors';
 
 type Category = typeof categories.$inferSelect;
 type TargetType = 'weekly' | 'monthly';
 
 export default function AddTargetScreen() {
   const router = useRouter();
+  const scheme = useColorScheme() ?? 'light';
+  const theme = Colors[scheme];
   const [categoryList, setCategoryList] = useState<Category[]>([]);
   const [type, setType] = useState<TargetType>('weekly');
   const [value, setValue] = useState('');
@@ -46,15 +50,16 @@ export default function AddTargetScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.form}>
-        <Text style={styles.label}>Type</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.form, { backgroundColor: theme.card, borderColor: theme.border }]}>
+        <Text style={[styles.label, { color: theme.subtext }]}>Type</Text>
         <View style={styles.optionsRow}>
           {(['weekly', 'monthly'] as const).map((item) => (
             <Pressable
               key={item}
               style={[
                 styles.optionButton,
+                { borderColor: theme.border, backgroundColor: theme.inputBg },
                 type === item && styles.optionButtonSelected,
               ]}
               onPress={() => setType(item)}
@@ -63,6 +68,7 @@ export default function AddTargetScreen() {
                 style={[
                   styles.optionText,
                   type === item && styles.optionTextSelected,
+                  { color: type === item ? theme.primary : theme.text },
                 ]}
               >
                 {item}
@@ -71,20 +77,22 @@ export default function AddTargetScreen() {
           ))}
         </View>
 
-        <Text style={styles.label}>Value</Text>
+        <Text style={[styles.label, { color: theme.subtext }]}>Value</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: theme.primary, backgroundColor: theme.inputBg, color: theme.text }]}
           value={value}
           onChangeText={setValue}
           keyboardType="number-pad"
           placeholder="5"
+          placeholderTextColor={theme.subtext}
         />
 
-        <Text style={styles.label}>Category (optional)</Text>
+        <Text style={[styles.label, { color: theme.subtext }]}>Category (optional)</Text>
         <View style={styles.optionsRow}>
           <Pressable
             style={[
               styles.optionButton,
+              { borderColor: theme.border, backgroundColor: theme.inputBg },
               categoryId === null && styles.optionButtonSelected,
             ]}
             onPress={() => setCategoryId(null)}
@@ -93,6 +101,7 @@ export default function AddTargetScreen() {
               style={[
                 styles.optionText,
                 categoryId === null && styles.optionTextSelected,
+                { color: categoryId === null ? theme.primary : theme.text },
               ]}
             >
               All
@@ -104,6 +113,7 @@ export default function AddTargetScreen() {
               key={category.id}
               style={[
                 styles.optionButton,
+                { borderColor: theme.border, backgroundColor: theme.inputBg },
                 categoryId === category.id && styles.optionButtonSelected,
               ]}
               onPress={() => setCategoryId(category.id)}
@@ -112,6 +122,7 @@ export default function AddTargetScreen() {
                 style={[
                   styles.optionText,
                   categoryId === category.id && styles.optionTextSelected,
+                  { color: categoryId === category.id ? theme.primary : theme.text },
                 ]}
               >
                 {category.name}
@@ -120,7 +131,7 @@ export default function AddTargetScreen() {
           ))}
         </View>
 
-        <Pressable style={styles.submitButton} onPress={() => void handleSubmit()}>
+        <Pressable style={({ pressed }) => [styles.submitButton, { backgroundColor: theme.primary, opacity: pressed ? 0.85 : 1 }]} onPress={() => void handleSubmit()}>
           <Text style={styles.submitText}>Save Target</Text>
         </Pressable>
       </View>
@@ -131,11 +142,13 @@ export default function AddTargetScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 16,
   },
   form: {
     gap: 10,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
   },
   label: {
     fontWeight: '600',
@@ -147,36 +160,34 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
+    borderRadius: 14,
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
   optionButtonSelected: {
-    borderColor: '#2563EB',
-    backgroundColor: '#DBEAFE',
+    borderColor: '#FF6B6B',
+    backgroundColor: '#FFE3DF',
   },
   optionText: {
     color: '#1F2937',
     textTransform: 'capitalize',
   },
   optionTextSelected: {
-    color: '#1D4ED8',
+    color: '#FF6B6B',
     fontWeight: '600',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
+    borderWidth: 1.5,
+    borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
   submitButton: {
     marginTop: 8,
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 14,
+    height: 52,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   submitText: {
     color: '#fff',

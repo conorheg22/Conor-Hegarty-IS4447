@@ -3,6 +3,7 @@ import { useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -10,9 +11,14 @@ import {
 } from 'react-native';
 import { db } from '../db/db';
 import { trips } from '../db/schema';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/Colors';
 
 export default function AddTripScreen() {
   const router = useRouter();
+  const scheme = useColorScheme() ?? 'light';
+  const theme = Colors[scheme];
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -32,36 +38,48 @@ export default function AddTripScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.form}>
-        <Text style={styles.label}>Name</Text>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="Paris Trip"
-        />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <LinearGradient colors={['#FF6B6B', '#FFB347']} style={styles.banner}>
+          <Text style={styles.bannerTitle}>Add New Trip ✈️</Text>
+          <Text style={styles.bannerSub}>Sunset plans start here</Text>
+        </LinearGradient>
 
-        <Text style={styles.label}>Start Date</Text>
-        <TextInput
-          style={styles.input}
-          value={startDate}
-          onChangeText={setStartDate}
-          placeholder="2026-06-10"
-        />
+        <View style={[styles.formCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={styles.form}>
+            <Text style={[styles.label, { color: theme.subtext }]}>Trip Name</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+              value={name}
+              onChangeText={setName}
+              placeholder="Paris Trip"
+              placeholderTextColor={theme.subtext}
+            />
 
-        <Text style={styles.label}>End Date</Text>
-        <TextInput
-          style={styles.input}
-          value={endDate}
-          onChangeText={setEndDate}
-          placeholder="2026-06-17"
-        />
+            <Text style={[styles.label, { color: theme.subtext }]}>Start Date</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+              value={startDate}
+              onChangeText={setStartDate}
+              placeholder="2026-06-10"
+              placeholderTextColor={theme.subtext}
+            />
 
-        <Pressable style={styles.submitButton} onPress={() => void handleSubmit()}>
-          <Text style={styles.submitText}>Save Trip</Text>
-        </Pressable>
-      </View>
+            <Text style={[styles.label, { color: theme.subtext }]}>End Date</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+              value={endDate}
+              onChangeText={setEndDate}
+              placeholder="2026-06-17"
+              placeholderTextColor={theme.subtext}
+            />
+
+            <Pressable style={({ pressed }) => [styles.submitButton, { backgroundColor: theme.primary, opacity: pressed ? 0.85 : 1 }]} onPress={() => void handleSubmit()}>
+              <Text style={styles.submitText}>Create Trip</Text>
+            </Pressable>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -69,31 +87,66 @@ export default function AddTripScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAF9F6',
+  },
+  content: {
     padding: 16,
+    paddingBottom: 28,
+  },
+  banner: {
+    height: 170,
+    borderRadius: 16,
+    marginBottom: 16,
+    padding: 18,
+    justifyContent: 'flex-end',
+  },
+  bannerTitle: {
+    color: '#FFF9F0',
+    fontSize: 28,
+    fontWeight: '800',
+  },
+  bannerSub: {
+    marginTop: 6,
+    color: '#FFF9F0',
+  },
+  formCard: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#1F2937',
+    shadowOpacity: 0.12,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 3,
   },
   form: {
-    gap: 10,
+    gap: 12,
   },
   label: {
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 15,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderWidth: 1.5,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   submitButton: {
-    marginTop: 8,
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
-    paddingVertical: 12,
+    marginTop: 10,
+    borderRadius: 14,
+    height: 52,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1F2937',
+    shadowOpacity: 0.14,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 3,
   },
   submitText: {
     color: '#fff',
     fontWeight: '700',
+    fontSize: 17,
   },
 });

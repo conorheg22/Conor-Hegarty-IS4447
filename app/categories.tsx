@@ -12,11 +12,15 @@ import { eq } from 'drizzle-orm';
 import { useFocusEffect } from '@react-navigation/native';
 import { db } from '../db/db';
 import { categories } from '../db/schema';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/Colors';
 
 type Category = typeof categories.$inferSelect;
 
 export default function CategoriesScreen() {
   const router = useRouter();
+  const scheme = useColorScheme() ?? 'light';
+  const theme = Colors[scheme];
   const [categoryList, setCategoryList] = useState<Category[]>([]);
 
   const loadCategories = useCallback(async () => {
@@ -36,25 +40,27 @@ export default function CategoriesScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <Pressable
-        style={styles.addButton}
+        style={({ pressed }) => [styles.addButton, { backgroundColor: theme.primary, opacity: pressed ? 0.85 : 1 }]}
         onPress={() => router.push('/add-category')}
       >
-        <Text style={styles.addButtonText}>Add Category</Text>
+        <Text style={styles.addButtonText}>New Category</Text>
       </Pressable>
 
       <FlatList
         data={categoryList}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
         keyExtractor={(item) => String(item.id)}
-        ListEmptyComponent={<Text style={styles.emptyText}>No categories yet.</Text>}
+        ListEmptyComponent={<Text style={[styles.emptyText, { color: theme.subtext }]}>No categories yet 🌴</Text>}
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.color}>Color: {item.color}</Text>
+          <View style={[styles.card, { backgroundColor: `${item.color}33`, borderColor: theme.border }]}>
+            <Text style={styles.emoji}>🍹</Text>
+            <Text style={[styles.name, { color: theme.text }]}>{item.name}</Text>
 
             <Pressable
-              style={styles.deleteButton}
+              style={({ pressed }) => [styles.deleteButton, { backgroundColor: theme.danger, opacity: pressed ? 0.85 : 1 }]}
               onPress={() => void handleDeleteCategory(item.id)}
             >
               <Text style={styles.deleteText}>Delete</Text>
@@ -69,16 +75,19 @@ export default function CategoriesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 16,
   },
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
   addButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#2563EB',
+    alignSelf: 'flex-end',
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 8,
+    height: 52,
+    borderRadius: 14,
     marginBottom: 14,
+    justifyContent: 'center',
   },
   addButtonText: {
     color: '#fff',
@@ -90,26 +99,28 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 10,
+    borderRadius: 16,
     padding: 12,
+    width: '48%',
+    alignItems: 'center',
+  },
+  emoji: {
+    fontSize: 32,
     marginBottom: 10,
   },
   name: {
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 4,
-  },
-  color: {
-    color: '#374151',
-    marginBottom: 10,
+    textAlign: 'center',
   },
   deleteButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#DC2626',
+    alignSelf: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: 14,
+    minWidth: 88,
+    alignItems: 'center',
   },
   deleteText: {
     color: '#fff',

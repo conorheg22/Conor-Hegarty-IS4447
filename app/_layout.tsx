@@ -1,14 +1,26 @@
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { initializeDatabase } from '../db/db';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/Colors';
 
 export default function RootLayout() {
+  const scheme = useColorScheme() ?? 'light';
+  const theme = Colors[scheme];
+
   useEffect(() => {
     initializeDatabase();
   }, []);
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.card },
+        headerTintColor: theme.text,
+        headerTitleStyle: { fontWeight: '800' },
+        contentStyle: { backgroundColor: theme.background },
+      }}
+    >
       <Stack.Screen name="index" options={{ title: 'Trip Planner' }} />
       <Stack.Screen name="trips" options={{ title: 'Trips' }} />
       <Stack.Screen name="add-trip" options={{ title: 'Add Trip' }} />

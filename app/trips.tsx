@@ -12,11 +12,16 @@ import { eq } from 'drizzle-orm';
 import { useFocusEffect } from '@react-navigation/native';
 import { db } from '../db/db';
 import { trips } from '../db/schema';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/Colors';
 
 type Trip = typeof trips.$inferSelect;
 
 export default function TripsScreen() {
   const router = useRouter();
+  const scheme = useColorScheme() ?? 'light';
+  const theme = Colors[scheme];
   const [tripList, setTripList] = useState<Trip[]>([]);
 
   const loadTrips = useCallback(async () => {
@@ -36,30 +41,44 @@ export default function TripsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Pressable style={styles.addButton} onPress={() => router.push('/add-trip')}>
-        <Text style={styles.addButtonText}>Add Trip</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <LinearGradient colors={['#FF6B6B', '#FFB347']} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={styles.banner}>
+        <Text style={styles.bannerTitle}>Aloha, Traveler 🌺</Text>
+        <Text style={styles.bannerSubtitle}>Where to next? 🏖️</Text>
+        <Text style={styles.bannerDecoration}>🌊 🌴 🍹</Text>
+      </LinearGradient>
+
+      <Pressable style={({ pressed }) => [styles.addButton, { backgroundColor: theme.primary, opacity: pressed ? 0.85 : 1 }]} onPress={() => router.push('/add-trip')}>
+        <Text style={styles.addButtonText}>＋</Text>
       </Pressable>
 
       <FlatList
         data={tripList}
+        contentContainerStyle={styles.listContent}
         keyExtractor={(item) => String(item.id)}
         ListEmptyComponent={<Text style={styles.emptyText}>No trips yet.</Text>}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.date}>Start: {item.startDate}</Text>
-            <Text style={styles.date}>End: {item.endDate}</Text>
+        renderItem={({ item, index }) => (
+          <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.leftAccent, { backgroundColor: index % 2 === 0 ? theme.accent : theme.secondary }]} />
+            <Text style={[styles.name, { color: theme.text }]}>📍 {item.name}</Text>
+            <Text style={[styles.date, { color: theme.subtext }]}>Start: {item.startDate}</Text>
+            <Text style={[styles.date, { color: theme.subtext }]}>End: {item.endDate}</Text>
 
             <View style={styles.actions}>
               <Pressable
-                style={[styles.actionButton, styles.editButton]}
+                style={({ pressed }) => [
+                  styles.actionButton,
+                  { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 },
+                ]}
                 onPress={() => router.push(`/edit-trip?id=${item.id}`)}
               >
                 <Text style={styles.actionText}>Edit</Text>
               </Pressable>
               <Pressable
-                style={[styles.actionButton, styles.deleteButton]}
+                style={({ pressed }) => [
+                  styles.actionButton,
+                  { backgroundColor: theme.danger, opacity: pressed ? 0.85 : 1 },
+                ]}
                 onPress={() => void handleDeleteTrip(item.id)}
               >
                 <Text style={styles.actionText}>Delete</Text>
@@ -75,59 +94,103 @@ export default function TripsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 16,
   },
-  addButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#2563EB',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 8,
+  banner: {
+    borderRadius: 16,
+    padding: 18,
     marginBottom: 14,
+    minHeight: 130,
+    justifyContent: 'center',
+  },
+  bannerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  bannerSubtitle: {
+    color: '#fff',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  bannerDecoration: {
+    marginTop: 8,
+    color: '#fff',
+    fontSize: 16,
+  },
+  addButton: {
+    position: 'absolute',
+    right: 20,
+    top: 110,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1F2937',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 6,
+    elevation: 3,
   },
   addButtonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 28,
+    lineHeight: 30,
+  },
+  listContent: {
+    paddingBottom: 20,
   },
   emptyText: {
     marginTop: 20,
-    color: '#6B7280',
+    color: '#1F2937',
   },
   card: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 10,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    paddingLeft: 22,
+    shadowColor: '#1F2937',
+    shadowOpacity: 0.1,
+  leftAccent: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
+  },
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 3,
   },
   name: {
-    fontSize: 18,
+    fontSize: 21,
     fontWeight: '700',
     marginBottom: 6,
+    color: '#1F2937',
   },
   date: {
-    color: '#374151',
+    color: '#2E8B57',
     marginBottom: 2,
+    fontSize: 15,
   },
   actions: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 10,
+    marginTop: 12,
   },
   actionButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  editButton: {
-    backgroundColor: '#4B5563',
-  },
-  deleteButton: {
-    backgroundColor: '#DC2626',
+    paddingHorizontal: 14,
+    height: 40,
+    borderRadius: 14,
+    justifyContent: 'center',
   },
   actionText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

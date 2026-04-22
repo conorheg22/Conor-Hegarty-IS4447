@@ -11,9 +11,13 @@ import {
 import { eq } from 'drizzle-orm';
 import { db } from '../db/db';
 import { trips } from '../db/schema';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/Colors';
 
 export default function EditTripScreen() {
   const router = useRouter();
+  const scheme = useColorScheme() ?? 'light';
+  const theme = Colors[scheme];
   const params = useLocalSearchParams<{ id?: string }>();
   const tripId = Number(params.id);
 
@@ -56,18 +60,18 @@ export default function EditTripScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.form}>
-        <Text style={styles.label}>Name</Text>
-        <TextInput style={styles.input} value={name} onChangeText={setName} />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.form, { backgroundColor: theme.card, borderColor: theme.border }]}>
+        <Text style={[styles.label, { color: theme.subtext }]}>Name</Text>
+        <TextInput style={[styles.input, { borderColor: theme.primary, backgroundColor: theme.inputBg, color: theme.text }]} value={name} onChangeText={setName} />
 
-        <Text style={styles.label}>Start Date</Text>
-        <TextInput style={styles.input} value={startDate} onChangeText={setStartDate} />
+        <Text style={[styles.label, { color: theme.subtext }]}>Start Date</Text>
+        <TextInput style={[styles.input, { borderColor: theme.primary, backgroundColor: theme.inputBg, color: theme.text }]} value={startDate} onChangeText={setStartDate} />
 
-        <Text style={styles.label}>End Date</Text>
-        <TextInput style={styles.input} value={endDate} onChangeText={setEndDate} />
+        <Text style={[styles.label, { color: theme.subtext }]}>End Date</Text>
+        <TextInput style={[styles.input, { borderColor: theme.primary, backgroundColor: theme.inputBg, color: theme.text }]} value={endDate} onChangeText={setEndDate} />
 
-        <Pressable style={styles.submitButton} onPress={() => void handleSave()}>
+        <Pressable style={({ pressed }) => [styles.submitButton, { backgroundColor: theme.primary, opacity: pressed ? 0.85 : 1 }]} onPress={() => void handleSave()}>
           <Text style={styles.submitText}>Update Trip</Text>
         </Pressable>
       </View>
@@ -78,28 +82,29 @@ export default function EditTripScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 16,
   },
   form: {
     gap: 10,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
   },
   label: {
     fontWeight: '600',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
+    borderWidth: 1.5,
+    borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
   submitButton: {
     marginTop: 8,
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 14,
+    height: 52,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   submitText: {
     color: '#fff',
