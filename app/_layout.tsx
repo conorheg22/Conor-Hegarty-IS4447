@@ -1,10 +1,17 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, Text, View, ActivityIndicator } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { AuthProvider, useAuth } from '../context/AuthContext';
 import { initializeDatabase } from '../db/db';
 import { seedDatabase } from '../db/seed';
-import { AuthProvider, useAuth } from '../context/AuthContext';
 
 function RootLayoutNav() {
   const { userId, isLoading, logout } = useAuth();
@@ -31,8 +38,8 @@ function RootLayoutNav() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0D1B2A' }}>
+        <ActivityIndicator size="large" color="#FF6B6B" />
       </View>
     );
   }
@@ -40,10 +47,16 @@ function RootLayoutNav() {
   return (
     <Stack
       screenOptions={{
+        headerStyle: { backgroundColor: '#0D1B2A' },
+        headerTintColor: '#FFF9F0',
+        headerTitleStyle: { fontWeight: '700', fontSize: 18 },
         headerRight: () =>
           userId ? (
-            <Pressable onPress={() => void handleLogout()} style={{ marginRight: 16 }}>
-              <Text style={{ color: '#EF4444', fontWeight: '600' }}>Logout</Text>
+            <Pressable
+              onPress={() => void handleLogout()}
+              style={{ marginRight: 16, backgroundColor: '#FF4757', paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10 }}
+            >
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>Logout</Text>
             </Pressable>
           ) : null,
       }}
@@ -51,7 +64,7 @@ function RootLayoutNav() {
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="register" options={{ headerShown: false }} />
       <Stack.Screen name="index" options={{ title: 'Home' }} />
-      <Stack.Screen name="trips" options={{ title: 'Trips' }} />
+      <Stack.Screen name="trips" options={{ title: 'Trip Planner' }} />
       <Stack.Screen name="activities" options={{ title: 'Activities' }} />
       <Stack.Screen name="categories" options={{ title: 'Categories' }} />
       <Stack.Screen name="targets" options={{ title: 'Targets' }} />
@@ -76,7 +89,7 @@ export default function RootLayout() {
       try {
         await AsyncStorage.clear();
       } catch {
-        // no storage yet, that's fine
+        // no storage yet
       }
       if (Platform.OS !== 'web') {
         try {
@@ -93,8 +106,9 @@ export default function RootLayout() {
 
   if (!dbReady) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0D1B2A' }}>
+        <ActivityIndicator size="large" color="#FF6B6B" />
+        <Text style={{ color: '#FFF9F0', marginTop: 12, fontSize: 15 }}>Loading Trip Planner...</Text>
       </View>
     );
   }
@@ -105,3 +119,5 @@ export default function RootLayout() {
     </AuthProvider>
   );
 }
+
+const styles = StyleSheet.create({});

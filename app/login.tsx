@@ -1,3 +1,7 @@
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { eq } from 'drizzle-orm';
+import { CryptoDigestAlgorithm, digestStringAsync } from 'expo-crypto';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -10,13 +14,9 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { digestStringAsync, CryptoDigestAlgorithm } from 'expo-crypto';
-import { eq } from 'drizzle-orm';
+import { useAuth } from '../context/AuthContext';
 import { db } from '../db/db';
 import { users } from '../db/schema';
-import { useAuth } from '../context/AuthContext';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/Colors';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -46,8 +46,11 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.inner}>
-        <Text style={[styles.title, { color: theme.text }]}>Welcome Back ✈️</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.inner}
+      >
+        <Text style={[styles.title, { color: theme.text }]}>Welcome Back</Text>
         <Text style={[styles.subtitle, { color: theme.subtext }]}>Log in to your Trip Planner</Text>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -82,7 +85,9 @@ export default function LoginScreen() {
         </Pressable>
 
         <Pressable onPress={() => router.replace('/register')} style={styles.linkWrap}>
-          <Text style={[styles.link, { color: theme.primary }]}>Don't have an account? Register</Text>
+          <Text style={[styles.link, { color: theme.primary }]}>
+            Don't have an account? Register
+          </Text>
         </Pressable>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -90,11 +95,28 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  inner: { flex: 1, padding: 24, justifyContent: 'center' },
-  title: { fontSize: 32, fontWeight: '700', marginBottom: 6 },
-  subtitle: { fontSize: 15, marginBottom: 28 },
-  error: { color: '#EF4444', marginBottom: 14, fontSize: 14 },
+  container: {
+    flex: 1,
+  },
+  inner: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 15,
+    marginBottom: 28,
+  },
+  error: {
+    color: '#EF4444',
+    marginBottom: 14,
+    fontSize: 14,
+  },
   inputWrap: {
     borderWidth: 1,
     borderRadius: 14,
@@ -103,7 +125,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 14,
   },
-  input: { fontSize: 15 },
+  input: {
+    fontSize: 15,
+  },
   button: {
     height: 52,
     borderRadius: 14,
@@ -111,7 +135,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 6,
   },
-  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  linkWrap: { marginTop: 20, alignItems: 'center' },
-  link: { fontSize: 14 },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  linkWrap: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  link: {
+    fontSize: 14,
+  },
 });
