@@ -60,7 +60,7 @@ export default function TargetsScreen() {
 
     targetRows.forEach((target) => {
       const periods = [];
-      const periodCount = 6; // check last 6 weeks/months
+      const periodCount = 6;
 
       for (let i = 0; i < periodCount; i++) {
         const start = new Date();
@@ -82,12 +82,10 @@ export default function TargetsScreen() {
         periods.push(filtered.length);
       }
 
-      // current period (latest)
       const completed = periods[0];
       const percentage = Math.min((completed / target.value) * 100, 100);
       const remaining = Math.max(target.value - completed, 0);
 
-      // streak calculation
       let streak = 0;
       for (let p of periods) {
         if (p >= target.value) streak++;
@@ -120,11 +118,11 @@ export default function TargetsScreen() {
         <Pressable
           style={({ pressed }) => [
             styles.addButton,
-            { opacity: pressed ? 0.85 : 1 },
+            { opacity: pressed ? 0.9 : 1 },
           ]}
           onPress={() => router.push('/add-target')}
         >
-          <Text style={styles.addButtonText}>+ Add Target</Text>
+          <Text style={styles.buttonText}>+ Add Target</Text>
         </Pressable>
 
         <FlatList
@@ -144,6 +142,20 @@ export default function TargetsScreen() {
               streak: 0,
             };
 
+            let statusText = '';
+            let statusColor = '';
+
+            if (progress.completed > item.value) {
+              statusText = 'Exceeded Target';
+              statusColor = '#EF4444';
+            } else if (progress.completed === item.value) {
+              statusText = 'Target Achieved';
+              statusColor = '#06D6A0';
+            } else {
+              statusText = 'In Progress';
+              statusColor = '#FFB347';
+            }
+
             return (
               <View
                 style={[
@@ -160,7 +172,9 @@ export default function TargetsScreen() {
                 </Text>
 
                 <Text style={[styles.meta, { color: theme.subtext }]}>
-                  Remaining: {progress.remaining}
+                  {progress.remaining > 0
+                    ? `${progress.remaining} remaining`
+                    : 'No remaining'}
                 </Text>
 
                 <Text style={[styles.meta, { color: theme.subtext }]}>
@@ -171,20 +185,8 @@ export default function TargetsScreen() {
                   Streak: {progress.streak}
                 </Text>
 
-                <Text
-                  style={[
-                    styles.status,
-                    {
-                      color:
-                        progress.completed >= item.value
-                          ? '#06D6A0'
-                          : '#FFB347',
-                    },
-                  ]}
-                >
-                  {progress.completed >= item.value
-                    ? 'Target Achieved'
-                    : 'In Progress'}
+                <Text style={[styles.status, { color: statusColor }]}>
+                  {statusText}
                 </Text>
 
                 {/* PROGRESS BAR */}
@@ -225,26 +227,28 @@ export default function TargetsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    paddingTop: 10,
   },
 
   addButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#FF4757',
-    paddingHorizontal: 16,
-    height: 52,
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 12,
     borderRadius: 14,
-    marginTop: 12,
-    marginBottom: 14,
-    justifyContent: 'center',
+    paddingVertical: 14,
+    alignItems: 'center',
+    backgroundColor: '#FFB347',
+    elevation: 4,
   },
 
-  addButtonText: {
+  buttonText: {
     color: '#fff',
     fontWeight: '700',
+    fontSize: 14,
   },
 
   listContent: {
+    paddingHorizontal: 16,
     paddingBottom: 120,
   },
 

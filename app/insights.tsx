@@ -22,7 +22,7 @@ import {
 type DurationByCategory = { category: string; totalDuration: number };
 type CountByTrip = { trip: string; totalActivities: number };
 
-type ViewMode = 'weekly' | 'monthly';
+type ViewMode = 'daily' | 'weekly' | 'monthly';
 
 export default function InsightsScreen() {
   const scheme = useColorScheme() ?? 'light';
@@ -49,14 +49,18 @@ export default function InsightsScreen() {
       const now = new Date();
       const cutoff = new Date();
 
-      if (viewMode === 'weekly') {
+      if (viewMode === 'daily') {
+        cutoff.setDate(now.getDate() - 1);
+      } else if (viewMode === 'weekly') {
         cutoff.setDate(now.getDate() - 7);
       } else {
         cutoff.setMonth(now.getMonth() - 1);
       }
 
-      const cutoffStr = cutoff.toISOString().split('T')[0];
-      const filtered = rows.filter((r) => r.date >= cutoffStr);
+      const filtered = rows.filter((r) => {
+        const activityDate = new Date(r.date);
+        return activityDate >= cutoff;
+      });
 
       const durationMap: Record<string, number> = {};
       const tripMap: Record<string, number> = {};
@@ -100,7 +104,7 @@ export default function InsightsScreen() {
 
           {/* FILTER */}
           <View style={styles.filterRow}>
-            {(['weekly', 'monthly'] as const).map((mode) => (
+            {(['daily', 'weekly', 'monthly'] as const).map((mode) => (
               <Pressable
                 key={mode}
                 style={[
@@ -207,21 +211,19 @@ export default function InsightsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
 
   content: {
     paddingHorizontal: 16,
     paddingBottom: 120,
-    paddingTop: 4, // ✅ reduced top gap
+    paddingTop: 4,
     gap: 16,
   },
 
   filterRow: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 4, // ✅ tighter spacing
+    marginBottom: 4,
   },
 
   filterButton: {

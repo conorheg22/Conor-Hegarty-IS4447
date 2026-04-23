@@ -16,17 +16,70 @@ import { NavDrawer } from '../components/NavDrawer';
 import { db } from '../db/db';
 import { trips } from '../db/schema';
 
-type Trip = typeof trips.$inferSelect;
+// ✅ FIX: include optional destination
+type Trip = typeof trips.$inferSelect & {
+  destination?: string;
+};
 
 export default function TripsScreen() {
   const router = useRouter();
   const scheme = useColorScheme() ?? 'light';
   const theme = Colors[scheme];
+
   const [tripList, setTripList] = useState<Trip[]>([]);
+  const [weatherMap, setWeatherMap] = useState<Record<number, string>>({});
+
+  // ✅ IMPROVED WEATHER FUNCTION
+  async function loadWeather(trips: Trip[]) {
+    const results: Record<number, string> = {};
+
+    for (const trip of trips) {
+      try {
+        // ✅ fallback logic (THIS fixes your issue)
+        const baseLocation =
+          trip.destination?.trim() || trip.name.split(' ')[0];
+
+        const city = baseLocation.split(',')[0];
+
+        // 1. Geocode
+        const geoRes = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}`
+        );
+        const geoData = await geoRes.json();
+        const location = geoData.results?.[0];
+
+        if (!location) {
+          results[trip.id] = 'No data';
+          continue;
+        }
+
+        const { latitude, longitude } = location;
+
+        // 2. Weather
+        const weatherRes = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m`
+        );
+        const weatherData = await weatherRes.json();
+
+        const temp = weatherData?.current?.temperature_2m;
+
+        results[trip.id] =
+          temp !== undefined ? `${Math.round(temp)}°C` : 'No data';
+
+      } catch (err) {
+        console.log('Weather error:', err);
+        results[trip.id] = 'Error';
+      }
+    }
+
+    setWeatherMap(results);
+  }
 
   const loadTrips = useCallback(async () => {
     const rows = await db.select().from(trips).orderBy(trips.startDate);
     setTripList(rows);
+
+    await loadWeather(rows);
   }, []);
 
   useFocusEffect(
@@ -44,7 +97,7 @@ export default function TripsScreen() {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
 
-        {/* Add button */}
+        {/* ADD BUTTON */}
         <Pressable
           style={({ pressed }) => [
             styles.addButton,
@@ -62,24 +115,35 @@ export default function TripsScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyIcon}>🗺️</Text>
-              <Text style={[styles.emptyTitle, { color: theme.text }]}>No trips yet</Text>
+              <Text style={[styles.emptyTitle, { color: theme.text }]}>
+                No trips yet
+              </Text>
               <Text style={[styles.emptySubtitle, { color: theme.subtext }]}>
                 Tap + Add Trip to get started
               </Text>
             </View>
           }
           renderItem={({ item }) => (
-            <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View
+              style={[
+                styles.card,
+                { backgroundColor: theme.card, borderColor: theme.border },
+              ]}
+            >
+              <Text style={[styles.name, { color: theme.text }]}>
+                {item.name}
+              </Text>
 
-              <View style={styles.cardHeader}>
-                <Text style={[styles.name, { color: theme.text }]}>
-                  {item.name}
-                </Text>
-              </View>
+              {/* ✅ WEATHER */}
+              <Text style={{ color: theme.subtext, marginBottom: 8 }}>
+                🌤 Weather: {weatherMap[item.id] || 'Loading...'}
+              </Text>
 
               <View style={styles.dateRow}>
                 <View style={[styles.dateBadge, { backgroundColor: theme.inputBg }]}>
-                  <Text style={[styles.dateLabel, { color: theme.subtext }]}>FROM</Text>
+                  <Text style={[styles.dateLabel, { color: theme.subtext }]}>
+                    FROM
+                  </Text>
                   <Text style={[styles.dateValue, { color: theme.text }]}>
                     {item.startDate}
                   </Text>
@@ -88,7 +152,9 @@ export default function TripsScreen() {
                 <Text style={[styles.dateSep, { color: theme.subtext }]}>→</Text>
 
                 <View style={[styles.dateBadge, { backgroundColor: theme.inputBg }]}>
-                  <Text style={[styles.dateLabel, { color: theme.subtext }]}>TO</Text>
+                  <Text style={[styles.dateLabel, { color: theme.subtext }]}>
+                    TO
+                  </Text>
                   <Text style={[styles.dateValue, { color: theme.text }]}>
                     {item.endDate}
                   </Text>
@@ -116,7 +182,6 @@ export default function TripsScreen() {
                   <Text style={styles.buttonText}>Delete</Text>
                 </Pressable>
               </View>
-
             </View>
           )}
         />
@@ -128,10 +193,7 @@ export default function TripsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 10,
-  },
+  container: { flex: 1, paddingTop: 10 },
 
   addButton: {
     marginHorizontal: 16,
@@ -183,13 +245,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  cardHeader: {
-    marginBottom: 10,
-  },
-
   name: {
     fontSize: 20,
     fontWeight: '800',
+    marginBottom: 6,
   },
 
   dateRow: {
@@ -208,7 +267,6 @@ const styles = StyleSheet.create({
   dateLabel: {
     fontSize: 10,
     fontWeight: '700',
-    marginBottom: 2,
   },
 
   dateValue: {
