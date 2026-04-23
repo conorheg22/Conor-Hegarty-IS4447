@@ -1,3 +1,6 @@
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { eq } from 'drizzle-orm';
 import { useRouter } from 'expo-router';
 import {
   Pressable,
@@ -6,12 +9,9 @@ import {
   Text,
   View,
 } from 'react-native';
-import { eq } from 'drizzle-orm';
+import { useAuth } from '../context/AuthContext';
 import { db } from '../db/db';
 import { users } from '../db/schema';
-import { useAuth } from '../context/AuthContext';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/Colors';
 
 export default function DeleteProfileScreen() {
   const router = useRouter();

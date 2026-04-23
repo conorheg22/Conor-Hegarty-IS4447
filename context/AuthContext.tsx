@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function restoreSession() {
       try {
+        await AsyncStorage.removeItem('userId');
         const stored = await AsyncStorage.getItem('userId');
         if (stored !== null) {
           setUserId(Number(stored));

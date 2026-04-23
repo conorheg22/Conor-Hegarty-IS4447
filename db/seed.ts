@@ -4,7 +4,7 @@ import { activities, categories, targets, trips, users } from './schema';
 
 export async function seedDatabase() {
   try {
-    const seeded = await AsyncStorage.getItem('dbSeeded');
+    const seeded = await AsyncStorage.getItem('dbSeeded_v2');
     if (seeded === 'true') return;
   } catch {
     return;
@@ -14,7 +14,7 @@ export async function seedDatabase() {
     { 
       id: 1, 
       username: 'testuser', 
-      passwordHash: 'password123', 
+      passwordHash: 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 
       createdAt: new Date().toISOString() 
     },
   ]).onConflictDoNothing();
@@ -44,7 +44,7 @@ export async function seedDatabase() {
   ]).onConflictDoNothing();
 
   try {
-    await AsyncStorage.setItem('dbSeeded', 'true');
+    await AsyncStorage.setItem('dbSeeded_v2', 'true');
     await AsyncStorage.setItem('theme', 'light');
   } catch {}
 }
