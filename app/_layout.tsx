@@ -1,3 +1,4 @@
+import * as Notifications from 'expo-notifications';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -7,10 +8,20 @@ import {
   Text,
   View,
 } from 'react-native';
+
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { ThemeProvider } from '../context/ThemeContext';
 import { initializeDatabase } from '../db/db';
 import { seedDatabase } from '../db/seed';
+
+/* 🔥 OPTIONAL: ensures notifications behave properly */
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 function RootLayoutNav() {
   const { userId, isLoading, logout } = useAuth();
@@ -46,11 +57,11 @@ function RootLayoutNav() {
     return (
       <Pressable
         onPress={() => router.replace('/trips')}
-        hitSlop={10} // makes tap area bigger
+        hitSlop={10}
         style={({ pressed }) => ({
           marginLeft: 10,
-          paddingHorizontal: 12, // 👈 adds width
-          paddingVertical: 6,    // 👈 adds height
+          paddingHorizontal: 12,
+          paddingVertical: 6,
           borderRadius: 8,
           opacity: pressed ? 0.7 : 1,
         })}
@@ -84,11 +95,9 @@ function RootLayoutNav() {
         headerTintColor: '#FFF9F0',
         headerTitleStyle: { fontWeight: '700', fontSize: 18 },
 
-        // 🔥 disable native back behaviour
         headerBackVisible: false,
         gestureEnabled: false,
 
-        // 🔥 custom back button
         headerLeft: () => {
           if (
             segments[0] === 'trips' ||
@@ -101,38 +110,36 @@ function RootLayoutNav() {
           return <BackToTripsButton />;
         },
 
-      headerRight: () =>
-        userId ? (
-          <Pressable
-            onPress={() => void handleLogout()}
-            hitSlop={10}
-            style={({ pressed }) => ({
-              backgroundColor: '#FF4757',
-              paddingHorizontal: 14,
-              paddingVertical: 7,
-              borderRadius: 10,
-              marginRight: 10, // replaces wrapper View spacing
-              opacity: pressed ? 0.85 : 1,
-            })}
-          >
-            <Text
-              style={{
-                color: '#FFFFFF',
-                fontWeight: '700',
-                fontSize: 13,
-              }}
+        headerRight: () =>
+          userId ? (
+            <Pressable
+              onPress={() => void handleLogout()}
+              hitSlop={10}
+              style={({ pressed }) => ({
+                backgroundColor: '#FF4757',
+                paddingHorizontal: 14,
+                paddingVertical: 7,
+                borderRadius: 10,
+                marginRight: 10,
+                opacity: pressed ? 0.85 : 1,
+              })}
             >
-              Logout
-            </Text>
-          </Pressable>
-        ) : null,
+              <Text
+                style={{
+                  color: '#FFFFFF',
+                  fontWeight: '700',
+                  fontSize: 13,
+                }}
+              >
+                Logout
+              </Text>
+            </Pressable>
+          ) : null,
       }}
     >
-      {/* AUTH */}
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="register" options={{ headerShown: false }} />
 
-      {/* MAIN */}
       <Stack.Screen name="trips" options={{ title: 'Trip Planner' }} />
       <Stack.Screen name="activities" options={{ title: 'Activities' }} />
       <Stack.Screen name="categories" options={{ title: 'Categories' }} />
@@ -140,7 +147,6 @@ function RootLayoutNav() {
       <Stack.Screen name="insights" options={{ title: 'Insights' }} />
       <Stack.Screen name="settings" options={{ title: 'Settings' }} />
 
-      {/* CRUD */}
       <Stack.Screen name="add-trip" options={{ title: 'Add Trip' }} />
       <Stack.Screen name="edit-trip" options={{ title: 'Edit Trip' }} />
       <Stack.Screen name="add-activity" options={{ title: 'Add Activity' }} />
@@ -149,7 +155,6 @@ function RootLayoutNav() {
       <Stack.Screen name="edit-category" options={{ title: 'Edit Category' }} />
       <Stack.Screen name="add-target" options={{ title: 'Add Target' }} />
 
-      {/* ACCOUNT */}
       <Stack.Screen
         name="delete-profile"
         options={{ title: 'Delete Account' }}
@@ -175,6 +180,18 @@ export default function RootLayout() {
     };
 
     void setupDatabase();
+  }, []);
+
+  /* 🔥 NOTIFICATIONS SETUP */
+  useEffect(() => {
+    async function setupNotifications() {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Notification permission not granted');
+      }
+    }
+
+    setupNotifications();
   }, []);
 
   if (!dbReady) {

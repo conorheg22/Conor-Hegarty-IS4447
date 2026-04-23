@@ -2,6 +2,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useFocusEffect } from '@react-navigation/native';
 import { eq } from 'drizzle-orm';
+import * as Notifications from 'expo-notifications'; // ✅ ADDED
 import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
@@ -12,6 +13,7 @@ import {
   Text,
   View,
 } from 'react-native';
+
 import { NavDrawer } from '../components/NavDrawer';
 import { db } from '../db/db';
 import { activities, categories, targets } from '../db/schema';
@@ -40,6 +42,17 @@ export default function TargetsScreen() {
 
   const [targetList, setTargetList] = useState<TargetRow[]>([]);
   const [progressMap, setProgressMap] = useState<ProgressMap>({});
+
+  // ✅ SIMPLE NOTIFICATION FUNCTION
+  async function triggerNotification(message: string) {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Target Reminder',
+        body: message,
+      },
+      trigger: null,
+    });
+  }
 
   const loadTargets = useCallback(async () => {
     const targetRows = await db
@@ -98,6 +111,13 @@ export default function TargetsScreen() {
         remaining,
         streak,
       };
+
+      // 🔥 ONLY ADD THIS BLOCK
+      if (remaining > 0 && completed < target.value) {
+        triggerNotification(
+          `${target.type} target: ${remaining} remaining`
+        );
+      }
     });
 
     setTargetList(targetRows);
@@ -189,7 +209,6 @@ export default function TargetsScreen() {
                   {statusText}
                 </Text>
 
-                {/* PROGRESS BAR */}
                 <View
                   style={[
                     styles.progressTrack,
