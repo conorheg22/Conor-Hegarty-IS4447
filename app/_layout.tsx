@@ -42,6 +42,26 @@ function RootLayoutNav() {
     router.replace('/login');
   }
 
+  function BackToTripsButton() {
+    return (
+      <Pressable
+        onPress={() => router.replace('/trips')}
+        hitSlop={10} // makes tap area bigger
+        style={({ pressed }) => ({
+          marginLeft: 10,
+          paddingHorizontal: 12, // 👈 adds width
+          paddingVertical: 6,    // 👈 adds height
+          borderRadius: 8,
+          opacity: pressed ? 0.7 : 1,
+        })}
+      >
+        <Text style={{ color: '#FFF9F0', fontWeight: '600' }}>
+          ← Trips
+        </Text>
+      </Pressable>
+    );
+  }
+
   if (isLoading) {
     return (
       <View
@@ -63,30 +83,56 @@ function RootLayoutNav() {
         headerStyle: { backgroundColor: '#0D1B2A' },
         headerTintColor: '#FFF9F0',
         headerTitleStyle: { fontWeight: '700', fontSize: 18 },
-        headerRight: () =>
-          userId ? (
-            <Pressable
-              onPress={() => void handleLogout()}
+
+        // 🔥 disable native back behaviour
+        headerBackVisible: false,
+        gestureEnabled: false,
+
+        // 🔥 custom back button
+        headerLeft: () => {
+          if (
+            segments[0] === 'trips' ||
+            segments[0] === 'login' ||
+            segments[0] === 'register'
+          ) {
+            return null;
+          }
+
+          return <BackToTripsButton />;
+        },
+
+      headerRight: () =>
+        userId ? (
+          <Pressable
+            onPress={() => void handleLogout()}
+            hitSlop={10}
+            style={({ pressed }) => ({
+              backgroundColor: '#FF4757',
+              paddingHorizontal: 14,
+              paddingVertical: 7,
+              borderRadius: 10,
+              marginRight: 10, // replaces wrapper View spacing
+              opacity: pressed ? 0.85 : 1,
+            })}
+          >
+            <Text
               style={{
-                marginRight: 16,
-                backgroundColor: '#FF4757',
-                paddingHorizontal: 14,
-                paddingVertical: 7,
-                borderRadius: 10,
+                color: '#FFFFFF',
+                fontWeight: '700',
+                fontSize: 13,
               }}
             >
-              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>
-                Logout
-              </Text>
-            </Pressable>
-          ) : null,
+              Logout
+            </Text>
+          </Pressable>
+        ) : null,
       }}
     >
       {/* AUTH */}
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="register" options={{ headerShown: false }} />
 
-      {/* MAIN SCREENS */}
+      {/* MAIN */}
       <Stack.Screen name="trips" options={{ title: 'Trip Planner' }} />
       <Stack.Screen name="activities" options={{ title: 'Activities' }} />
       <Stack.Screen name="categories" options={{ title: 'Categories' }} />

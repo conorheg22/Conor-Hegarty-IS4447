@@ -7,6 +7,8 @@ export const db = drizzle(sqlite);
 
 export async function initializeDatabase(): Promise<void> {
   sqlite.execSync(`
+    PRAGMA foreign_keys = OFF;
+
     PRAGMA foreign_keys = ON;
 
     CREATE TABLE IF NOT EXISTS trips (
@@ -19,7 +21,8 @@ export async function initializeDatabase(): Promise<void> {
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      color TEXT NOT NULL
+      color TEXT NOT NULL,
+      emoji TEXT NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS activities (

@@ -11,6 +11,7 @@ export const categories = sqliteTable('categories', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   color: text('color').notNull(),
+  emoji: text('emoji').notNull(), // ✅ NEW
 });
 
 export const activities = sqliteTable('activities', {

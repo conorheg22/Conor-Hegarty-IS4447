@@ -1,47 +1,109 @@
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useFocusEffect } from '@react-navigation/native';
+import { eq } from 'drizzle-orm';
 import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   FlatList,
-  ImageBackground,
   Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { eq } from 'drizzle-orm';
+import { NavDrawer } from '../components/NavDrawer';
 import { db } from '../db/db';
-import { categories, targets } from '../db/schema';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/Colors';
+import { activities, categories, targets } from '../db/schema';
 
 type TargetRow = {
   id: number;
   type: string;
   value: number;
+  categoryId: number | null;
   categoryName: string | null;
+};
+
+type ProgressMap = {
+  [key: number]: {
+    completed: number;
+    percentage: number;
+    remaining: number;
+    streak: number;
+  };
 };
 
 export default function TargetsScreen() {
   const router = useRouter();
   const scheme = useColorScheme() ?? 'light';
   const theme = Colors[scheme];
+
   const [targetList, setTargetList] = useState<TargetRow[]>([]);
+  const [progressMap, setProgressMap] = useState<ProgressMap>({});
 
   const loadTargets = useCallback(async () => {
-    const rows = await db
+    const targetRows = await db
       .select({
         id: targets.id,
         type: targets.type,
         value: targets.value,
+        categoryId: targets.categoryId,
         categoryName: categories.name,
       })
       .from(targets)
-      .leftJoin(categories, eq(targets.categoryId, categories.id))
-      .orderBy(targets.id);
+      .leftJoin(categories, eq(targets.categoryId, categories.id));
 
-    setTargetList(rows);
+    const activityRows = await db.select().from(activities);
+
+    const now = new Date();
+    const newProgress: ProgressMap = {};
+
+    targetRows.forEach((target) => {
+      const periods = [];
+      const periodCount = 6; // check last 6 weeks/months
+
+      for (let i = 0; i < periodCount; i++) {
+        const start = new Date();
+
+        if (target.type === 'weekly') {
+          start.setDate(now.getDate() - (i + 1) * 7);
+        } else {
+          start.setMonth(now.getMonth() - (i + 1));
+        }
+
+        const startStr = start.toISOString().split('T')[0];
+
+        const filtered = activityRows.filter((a) => {
+          if (a.date < startStr) return false;
+          if (target.categoryId && a.categoryId !== target.categoryId) return false;
+          return true;
+        });
+
+        periods.push(filtered.length);
+      }
+
+      // current period (latest)
+      const completed = periods[0];
+      const percentage = Math.min((completed / target.value) * 100, 100);
+      const remaining = Math.max(target.value - completed, 0);
+
+      // streak calculation
+      let streak = 0;
+      for (let p of periods) {
+        if (p >= target.value) streak++;
+        else break;
+      }
+
+      newProgress[target.id] = {
+        completed,
+        percentage,
+        remaining,
+        streak,
+      };
+    });
+
+    setTargetList(targetRows);
+    setProgressMap(newProgress);
   }, []);
 
   useFocusEffect(
@@ -51,51 +113,112 @@ export default function TargetsScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <ImageBackground
-        source={{
-          uri: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80',
-        }}
-        style={styles.banner}
-        imageStyle={styles.bannerImage}
-      >
-        <View style={styles.bannerOverlay}>
-          <Text style={styles.bannerTitle}>Targets</Text>
-          <Text style={styles.bannerSubtitle}>Track progress for every adventure</Text>
-        </View>
-      </ImageBackground>
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
 
-      <Pressable style={styles.addButton} onPress={() => router.push('/add-target')}>
-        <Text style={styles.addButtonText}>+ Add Target</Text>
-      </Pressable>
+        {/* ADD BUTTON */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.addButton,
+            { opacity: pressed ? 0.85 : 1 },
+          ]}
+          onPress={() => router.push('/add-target')}
+        >
+          <Text style={styles.addButtonText}>+ Add Target</Text>
+        </Pressable>
 
-      <FlatList
-        data={targetList}
-        contentContainerStyle={styles.listContent}
-        keyExtractor={(item) => String(item.id)}
-        ListEmptyComponent={<Text style={[styles.emptyText, { color: theme.subtext }]}>No targets yet 🎯</Text>}
-        renderItem={({ item }) => (
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: theme.card, borderColor: theme.border },
-              item.type === 'weekly' ? styles.weeklyCard : styles.monthlyCard,
-            ]}
-          >
-            <View style={[styles.leftBar, { backgroundColor: item.type === 'weekly' ? theme.primary : theme.accent }]} />
-            <Text style={styles.title}>
-              {item.type === 'weekly' ? '🌴 Weekly Target' : '🌅 Monthly Target'}
+        <FlatList
+          data={targetList}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <Text style={[styles.emptyText, { color: theme.subtext }]}>
+              No targets yet. Create one to start tracking your progress.
             </Text>
-            <Text style={styles.meta}>Goal Value: {item.value}</Text>
-            <Text style={styles.meta}>Category: {item.categoryName ?? 'All'}</Text>
-            <View style={[styles.progressTrack, { backgroundColor: theme.inputBg }]}>
-              <View style={[styles.progressFill, { backgroundColor: item.type === 'weekly' ? theme.primary : theme.accent, width: `${Math.min(item.value * 10, 100)}%` }]} />
-            </View>
-            <Text style={styles.progressText}>{Math.min(item.value * 10, 100)}%</Text>
-          </View>
-        )}
-      />
-    </SafeAreaView>
+          }
+          renderItem={({ item }) => {
+            const progress = progressMap[item.id] || {
+              completed: 0,
+              percentage: 0,
+              remaining: item.value,
+              streak: 0,
+            };
+
+            return (
+              <View
+                style={[
+                  styles.card,
+                  { backgroundColor: theme.card, borderColor: theme.border },
+                ]}
+              >
+                <Text style={[styles.title, { color: theme.text }]}>
+                  {item.type === 'weekly' ? 'Weekly Target' : 'Monthly Target'}
+                </Text>
+
+                <Text style={[styles.meta, { color: theme.text }]}>
+                  Progress: {progress.completed} / {item.value}
+                </Text>
+
+                <Text style={[styles.meta, { color: theme.subtext }]}>
+                  Remaining: {progress.remaining}
+                </Text>
+
+                <Text style={[styles.meta, { color: theme.subtext }]}>
+                  Category: {item.categoryName ?? 'All'}
+                </Text>
+
+                <Text style={[styles.meta, { color: theme.primary }]}>
+                  Streak: {progress.streak}
+                </Text>
+
+                <Text
+                  style={[
+                    styles.status,
+                    {
+                      color:
+                        progress.completed >= item.value
+                          ? '#06D6A0'
+                          : '#FFB347',
+                    },
+                  ]}
+                >
+                  {progress.completed >= item.value
+                    ? 'Target Achieved'
+                    : 'In Progress'}
+                </Text>
+
+                {/* PROGRESS BAR */}
+                <View
+                  style={[
+                    styles.progressTrack,
+                    { backgroundColor: theme.inputBg },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.progressFill,
+                      {
+                        backgroundColor:
+                          item.type === 'weekly'
+                            ? theme.primary
+                            : theme.accent,
+                        width: `${progress.percentage}%`,
+                      },
+                    ]}
+                  />
+                </View>
+
+                <Text style={[styles.progressText, { color: theme.text }]}>
+                  {Math.round(progress.percentage)}%
+                </Text>
+              </View>
+            );
+          }}
+        />
+      </SafeAreaView>
+
+      <NavDrawer />
+    </View>
   );
 }
 
@@ -104,105 +227,68 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  banner: {
-    height: 140,
-    borderRadius: 20,
-    overflow: 'hidden',
-    marginBottom: 14,
-  },
-  bannerImage: {
-    borderRadius: 20,
-  },
-  bannerOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.24)',
-    padding: 14,
-  },
-  bannerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  bannerSubtitle: {
-    color: '#F5E6CA',
-    marginTop: 4,
-  },
+
   addButton: {
     alignSelf: 'flex-start',
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#FF4757',
     paddingHorizontal: 16,
     height: 52,
     borderRadius: 14,
+    marginTop: 12,
     marginBottom: 14,
     justifyContent: 'center',
-    shadowColor: '#1F2937',
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 3,
   },
+
   addButtonText: {
     color: '#fff',
     fontWeight: '700',
   },
+
   listContent: {
-    paddingBottom: 24,
+    paddingBottom: 120,
   },
+
   emptyText: {
     marginTop: 20,
-    color: '#1F2937',
   },
+
   card: {
     borderWidth: 1,
     borderRadius: 18,
     padding: 15,
     marginBottom: 12,
-    shadowColor: '#1F2937',
-    shadowOpacity: 0.11,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 3,
   },
-  weeklyCard: {
-    backgroundColor: '#FFFFFF',
-  },
-  monthlyCard: {
-    backgroundColor: '#FFFFFF',
-  },
-  leftBar: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-    borderTopLeftRadius: 18,
-    borderBottomLeftRadius: 18,
-  },
+
   title: {
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 4,
-    color: '#1F2937',
   },
+
   meta: {
-    color: '#1F2937',
     marginBottom: 2,
     fontSize: 15,
   },
+
+  status: {
+    marginTop: 6,
+    fontWeight: '700',
+  },
+
   progressTrack: {
     height: 10,
     borderRadius: 999,
     marginTop: 10,
     overflow: 'hidden',
   },
+
   progressFill: {
     height: '100%',
     borderRadius: 999,
   },
+
   progressText: {
     marginTop: 6,
     fontWeight: '800',
-    color: '#2D1B00',
   },
 });

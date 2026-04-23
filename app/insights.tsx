@@ -1,40 +1,44 @@
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { eq } from 'drizzle-orm';
 import { useEffect, useState } from 'react';
 import {
-  Dimensions,
-  ImageBackground,
-  SafeAreaView,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  View,
+  View
 } from 'react-native';
-import { eq } from 'drizzle-orm';
 import { BarChart } from 'react-native-chart-kit';
+import { SafeAreaView as SafeArea } from 'react-native-safe-area-context';
+import { NavDrawer } from '../components/NavDrawer';
 import { db } from '../db/db';
 import {
   activities as activitiesTable,
   categories as categoriesTable,
   trips as tripsTable,
 } from '../db/schema';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/Colors';
 
 type DurationByCategory = { category: string; totalDuration: number };
 type CountByTrip = { trip: string; totalActivities: number };
 
-const chartWidth = Math.max(Dimensions.get('window').width - 32, 280);
+type ViewMode = 'weekly' | 'monthly';
 
 export default function InsightsScreen() {
   const scheme = useColorScheme() ?? 'light';
   const theme = Colors[scheme];
+
+  const [viewMode, setViewMode] = useState<ViewMode>('weekly');
   const [durationByCategory, setDurationByCategory] = useState<DurationByCategory[]>([]);
   const [activitiesByTrip, setActivitiesByTrip] = useState<CountByTrip[]>([]);
+  const [chartWidth, setChartWidth] = useState(0);
 
   useEffect(() => {
     async function loadInsights() {
-      const activityRows = await db
+      const rows = await db
         .select({
           duration: activitiesTable.duration,
+          date: activitiesTable.date,
           categoryName: categoriesTable.name,
           tripName: tripsTable.name,
         })
@@ -42,179 +46,217 @@ export default function InsightsScreen() {
         .innerJoin(categoriesTable, eq(activitiesTable.categoryId, categoriesTable.id))
         .innerJoin(tripsTable, eq(activitiesTable.tripId, tripsTable.id));
 
-      const durationMap: Record<string, number> = {};
-      const tripCountMap: Record<string, number> = {};
+      const now = new Date();
+      const cutoff = new Date();
 
-      for (const row of activityRows) {
-        durationMap[row.categoryName] = (durationMap[row.categoryName] ?? 0) + row.duration;
-        tripCountMap[row.tripName] = (tripCountMap[row.tripName] ?? 0) + 1;
+      if (viewMode === 'weekly') {
+        cutoff.setDate(now.getDate() - 7);
+      } else {
+        cutoff.setMonth(now.getMonth() - 1);
       }
 
-      const durationSummary = Object.entries(durationMap).map(([category, totalDuration]) => ({
-        category,
-        totalDuration,
-      }));
+      const cutoffStr = cutoff.toISOString().split('T')[0];
+      const filtered = rows.filter((r) => r.date >= cutoffStr);
 
-      const tripSummary = Object.entries(tripCountMap).map(([trip, totalActivities]) => ({
-        trip,
-        totalActivities,
-      }));
+      const durationMap: Record<string, number> = {};
+      const tripMap: Record<string, number> = {};
 
-      setDurationByCategory(durationSummary);
-      setActivitiesByTrip(tripSummary);
+      filtered.forEach((r) => {
+        durationMap[r.categoryName] =
+          (durationMap[r.categoryName] ?? 0) + r.duration;
+
+        tripMap[r.tripName] =
+          (tripMap[r.tripName] ?? 0) + 1;
+      });
+
+      setDurationByCategory(
+        Object.entries(durationMap).map(([category, totalDuration]) => ({
+          category,
+          totalDuration,
+        }))
+      );
+
+      setActivitiesByTrip(
+        Object.entries(tripMap).map(([trip, totalActivities]) => ({
+          trip,
+          totalActivities,
+        }))
+      );
     }
 
     void loadInsights();
-  }, []);
+  }, [viewMode]);
 
-  const chartData = {
-    labels: durationByCategory.map((item) => item.category),
-    datasets: [{ data: durationByCategory.map((item) => item.totalDuration) }],
-  };
+  const mostActive = durationByCategory.reduce(
+    (max, item) =>
+      item.totalDuration > (max?.totalDuration ?? 0) ? item : max,
+    null as DurationByCategory | null
+  );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <ImageBackground
-          source={{
-            uri: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1200&q=80',
-          }}
-          style={styles.banner}
-          imageStyle={styles.bannerImage}
-        >
-          <View style={styles.bannerOverlay}>
-            <Text style={styles.bannerTitle}>Insights</Text>
-            <Text style={styles.bannerSubtitle}>See how your travel time is spent</Text>
-          </View>
-        </ImageBackground>
+    <View style={{ flex: 1 }}>
+      <SafeArea style={[styles.container, { backgroundColor: theme.background }]}>
+        <ScrollView contentContainerStyle={styles.content}>
 
-        <View style={[styles.sectionCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Total Duration per Category</Text>
-          {durationByCategory.length === 0 ? (
-            <Text style={[styles.empty, { color: theme.subtext }]}>No activity data yet.</Text>
-          ) : (
-            <>
-              {durationByCategory.map((item) => (
-                <Text key={item.category} style={[styles.summaryText, { color: theme.text }]}>
-                  {item.category}: {item.totalDuration} mins
+          {/* FILTER */}
+          <View style={styles.filterRow}>
+            {(['weekly', 'monthly'] as const).map((mode) => (
+              <Pressable
+                key={mode}
+                style={[
+                  styles.filterButton,
+                  {
+                    backgroundColor:
+                      viewMode === mode ? theme.primary : theme.inputBg,
+                  },
+                ]}
+                onPress={() => setViewMode(mode)}
+              >
+                <Text
+                  style={{
+                    color: viewMode === mode ? '#fff' : theme.text,
+                    fontWeight: '600',
+                  }}
+                >
+                  {mode}
                 </Text>
-              ))}
+              </Pressable>
+            ))}
+          </View>
 
-              <BarChart
-                data={chartData}
-                width={chartWidth}
-                height={220}
-                yAxisLabel=""
-                yAxisSuffix="m"
-                fromZero
-                showValuesOnTopOfBars
-                chartConfig={{
-                  backgroundGradientFrom: theme.background,
-                  backgroundGradientTo: theme.background,
-                  decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(255, 107, 107, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(45, 27, 0, ${opacity})`,
-                  barPercentage: 0.65,
-                  fillShadowGradient: '#06D6A0',
-                  fillShadowGradientOpacity: 1,
-                }}
-                style={styles.chart}
-              />
-            </>
-          )}
-        </View>
+          {/* CATEGORY CHART */}
+          <View
+            style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}
+            onLayout={(e) => {
+              const width = e.nativeEvent.layout.width;
+              setChartWidth(width - 32);
+            }}
+          >
+            <Text style={[styles.title, { color: theme.text }]}>
+              Duration by Category
+            </Text>
 
-        <View style={[styles.sectionCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Total Activities per Trip</Text>
-          {activitiesByTrip.length === 0 ? (
-            <Text style={[styles.empty, { color: theme.subtext }]}>No trip activity data yet.</Text>
-          ) : (
-            activitiesByTrip.map((item) => (
-              <View key={item.trip} style={[styles.tripRow, { backgroundColor: theme.inputBg }]}>
-                <Text style={[styles.summaryText, { color: theme.text }]}>{item.trip}</Text>
-                <Text style={[styles.tripValue, { color: theme.primary }]}>{item.totalActivities}</Text>
-              </View>
-            ))
-          )}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+            {mostActive && (
+              <Text style={[styles.highlight, { color: theme.primary }]}>
+                Most Active: {mostActive.category} ({mostActive.totalDuration} mins)
+              </Text>
+            )}
+
+            {durationByCategory.length === 0 ? (
+              <Text style={{ color: theme.subtext }}>
+                No data for this period.
+              </Text>
+            ) : (
+              chartWidth > 0 && (
+                <BarChart
+                  data={{
+                    labels: durationByCategory.map((i) => i.category),
+                    datasets: [
+                      { data: durationByCategory.map((i) => i.totalDuration) },
+                    ],
+                  }}
+                  width={chartWidth}
+                  height={220}
+                  fromZero
+                  showValuesOnTopOfBars
+                  withInnerLines={false}
+                  chartConfig={{
+                    backgroundGradientFrom: theme.card,
+                    backgroundGradientTo: theme.card,
+                    decimalPlaces: 0,
+                    color: () => theme.primary,
+                    labelColor: () => theme.text,
+                  }}
+                  style={styles.chart}
+                />
+              )
+            )}
+          </View>
+
+          {/* TRIP SUMMARY */}
+          <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={[styles.title, { color: theme.text }]}>
+              Activities by Trip
+            </Text>
+
+            {activitiesByTrip.length === 0 ? (
+              <Text style={{ color: theme.subtext }}>
+                No trip data yet.
+              </Text>
+            ) : (
+              activitiesByTrip.map((item) => (
+                <View
+                  key={item.trip}
+                  style={[styles.tripRow, { backgroundColor: theme.inputBg }]}
+                >
+                  <Text style={{ color: theme.text }}>{item.trip}</Text>
+                  <Text style={{ color: theme.primary, fontWeight: '700' }}>
+                    {item.totalActivities}
+                  </Text>
+                </View>
+              ))
+            )}
+          </View>
+
+        </ScrollView>
+      </SafeArea>
+
+      <NavDrawer />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF9F6',
   },
+
   content: {
-    padding: 16,
-    gap: 14,
-    paddingBottom: 26,
+    paddingHorizontal: 16,
+    paddingBottom: 120,
+    paddingTop: 4, // ✅ reduced top gap
+    gap: 16,
   },
-  banner: {
-    height: 148,
-    borderRadius: 20,
-    overflow: 'hidden',
+
+  filterRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 4, // ✅ tighter spacing
   },
-  bannerImage: {
-    borderRadius: 20,
+
+  filterButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
   },
-  bannerOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
-    padding: 14,
-  },
-  bannerTitle: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  bannerSubtitle: {
-    color: '#F5E6CA',
-    marginTop: 4,
-  },
-  sectionCard: {
+
+  card: {
     borderWidth: 1,
     borderRadius: 18,
     padding: 14,
-    shadowColor: '#1F2937',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 3,
   },
-  sectionTitle: {
-    fontSize: 20,
+
+  title: {
+    fontSize: 18,
     fontWeight: '700',
-    color: '#1F2937',
+    marginBottom: 6,
+  },
+
+  highlight: {
     marginBottom: 8,
+    fontWeight: '700',
   },
-  summaryText: {
-    fontSize: 15,
-    marginBottom: 4,
-  },
-  empty: {
-    color: '#1F2937',
-  },
+
   chart: {
-    marginTop: 8,
+    marginTop: 10,
     borderRadius: 12,
   },
+
   tripRow: {
-    backgroundColor: '#FFF7E8',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderRadius: 12,
+    padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 8,
-  },
-  tripValue: {
-    color: '#2E8B57',
-    fontWeight: '700',
-    fontSize: 16,
   },
 });

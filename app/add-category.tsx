@@ -1,3 +1,5 @@
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -10,24 +12,26 @@ import {
 } from 'react-native';
 import { db } from '../db/db';
 import { categories } from '../db/schema';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/Colors';
+
+const COLORS = ['#FF6B6B', '#FFD166', '#06D6A0', '#118AB2', '#9B5DE5'];
+const EMOJIS = ['🏖️', '🍔', '🏃', '🛍️', '🍻', '🎉', '📸'];
 
 export default function AddCategoryScreen() {
   const router = useRouter();
   const scheme = useColorScheme() ?? 'light';
   const theme = Colors[scheme];
+
   const [name, setName] = useState('');
-  const [color, setColor] = useState('');
+  const [color, setColor] = useState(COLORS[0]);
+  const [emoji, setEmoji] = useState(EMOJIS[0]);
 
   async function handleSubmit() {
-    if (!name.trim() || !color.trim()) {
-      return;
-    }
+    if (!name.trim()) return;
 
     await db.insert(categories).values({
-      name: name.trim(),
-      color: color.trim(),
+      name,
+      color,
+      emoji,
     });
 
     router.back();
@@ -35,62 +39,92 @@ export default function AddCategoryScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={[styles.form, { backgroundColor: theme.card, borderColor: theme.border }]}>
-        <Text style={[styles.label, { color: theme.subtext }]}>Name</Text>
-        <TextInput
-          style={[styles.input, { borderColor: theme.primary, backgroundColor: theme.inputBg, color: theme.text }]}
-          value={name}
-          onChangeText={setName}
-          placeholder="Sightseeing"
-          placeholderTextColor={theme.subtext}
-        />
+      <View style={[styles.form, { backgroundColor: theme.card }]}>
 
-        <Text style={[styles.label, { color: theme.subtext }]}>Color</Text>
-        <TextInput
-          style={[styles.input, { borderColor: theme.primary, backgroundColor: theme.inputBg, color: theme.text }]}
-          value={color}
-          onChangeText={setColor}
-          placeholder="#3B82F6"
-          placeholderTextColor={theme.subtext}
-        />
+        <Text>Name</Text>
+        <TextInput style={styles.input} value={name} onChangeText={setName} />
 
-        <Pressable style={({ pressed }) => [styles.submitButton, { backgroundColor: theme.primary, opacity: pressed ? 0.85 : 1 }]} onPress={() => void handleSubmit()}>
-          <Text style={styles.submitText}>Save Category</Text>
+        <Text>Emoji</Text>
+        <View style={styles.row}>
+          {EMOJIS.map((e) => (
+            <Pressable key={e} onPress={() => setEmoji(e)}>
+              <Text style={[styles.emoji, emoji === e && styles.selected]}>
+                {e}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <Text>Colour</Text>
+        <View style={styles.row}>
+          {COLORS.map((c) => (
+            <Pressable
+              key={c}
+              style={[
+                styles.color,
+                { backgroundColor: c },
+                color === c && styles.selectedColor,
+              ]}
+              onPress={() => setColor(c)}
+            />
+          ))}
+        </View>
+
+        <Pressable style={styles.button} onPress={handleSubmit}>
+          <Text style={{ color: '#fff' }}>Save Category</Text>
         </Pressable>
+
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
+  container: { flex: 1, padding: 16 },
+
   form: {
-    gap: 10,
-    borderWidth: 1,
     borderRadius: 16,
     padding: 16,
+    gap: 10,
   },
-  label: {
-    fontWeight: '600',
-  },
+
   input: {
-    borderWidth: 1.5,
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 6,
   },
-  submitButton: {
-    marginTop: 8,
-    borderRadius: 14,
-    height: 52,
+
+  row: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+
+  emoji: {
+    fontSize: 26,
+    padding: 6,
+  },
+
+  selected: {
+    borderWidth: 2,
+    borderRadius: 6,
+  },
+
+  color: {
+    width: 30,
+    height: 30,
+    borderRadius: 6,
+  },
+
+  selectedColor: {
+    borderWidth: 3,
+  },
+
+  button: {
+    marginTop: 20,
+    backgroundColor: '#06D6A0',
+    padding: 12,
+    borderRadius: 8,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  submitText: {
-    color: '#fff',
-    fontWeight: '700',
   },
 });
