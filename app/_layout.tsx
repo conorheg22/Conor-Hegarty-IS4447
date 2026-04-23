@@ -1,15 +1,14 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { ThemeProvider } from '../context/ThemeContext';
 import { initializeDatabase } from '../db/db';
 import { seedDatabase } from '../db/seed';
 
@@ -20,13 +19,20 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (isLoading) return;
+
     const inAuthGroup =
       segments[0] === 'login' ||
       segments[0] === 'register' ||
       segments[0] === 'delete-profile';
+
     if (!userId && !inAuthGroup) {
       router.replace('/login');
-    } else if (userId && (segments[0] === 'login' || segments[0] === 'register')) {
+    } else if (
+      userId &&
+      (segments[0] === 'login' ||
+        segments[0] === 'register' ||
+        segments[0] === 'index')
+    ) {
       router.replace('/trips');
     }
   }, [userId, isLoading, segments]);
@@ -38,7 +44,14 @@ function RootLayoutNav() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0D1B2A' }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#0D1B2A',
+        }}
+      >
         <ActivityIndicator size="large" color="#FF6B6B" />
       </View>
     );
@@ -54,21 +67,34 @@ function RootLayoutNav() {
           userId ? (
             <Pressable
               onPress={() => void handleLogout()}
-              style={{ marginRight: 16, backgroundColor: '#FF4757', paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10 }}
+              style={{
+                marginRight: 16,
+                backgroundColor: '#FF4757',
+                paddingHorizontal: 14,
+                paddingVertical: 7,
+                borderRadius: 10,
+              }}
             >
-              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>Logout</Text>
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>
+                Logout
+              </Text>
             </Pressable>
           ) : null,
       }}
     >
+      {/* AUTH */}
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="register" options={{ headerShown: false }} />
-      <Stack.Screen name="index" options={{ title: 'Home' }} />
+
+      {/* MAIN SCREENS */}
       <Stack.Screen name="trips" options={{ title: 'Trip Planner' }} />
       <Stack.Screen name="activities" options={{ title: 'Activities' }} />
       <Stack.Screen name="categories" options={{ title: 'Categories' }} />
       <Stack.Screen name="targets" options={{ title: 'Targets' }} />
       <Stack.Screen name="insights" options={{ title: 'Insights' }} />
+      <Stack.Screen name="settings" options={{ title: 'Settings' }} />
+
+      {/* CRUD */}
       <Stack.Screen name="add-trip" options={{ title: 'Add Trip' }} />
       <Stack.Screen name="edit-trip" options={{ title: 'Edit Trip' }} />
       <Stack.Screen name="add-activity" options={{ title: 'Add Activity' }} />
@@ -76,7 +102,12 @@ function RootLayoutNav() {
       <Stack.Screen name="add-category" options={{ title: 'Add Category' }} />
       <Stack.Screen name="edit-category" options={{ title: 'Edit Category' }} />
       <Stack.Screen name="add-target" options={{ title: 'Add Target' }} />
-      <Stack.Screen name="delete-profile" options={{ title: 'Delete Account' }} />
+
+      {/* ACCOUNT */}
+      <Stack.Screen
+        name="delete-profile"
+        options={{ title: 'Delete Account' }}
+      />
     </Stack>
   );
 }
@@ -86,11 +117,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     const setupDatabase = async () => {
-      try {
-        await AsyncStorage.clear();
-      } catch {
-        // no storage yet
-      }
       if (Platform.OS !== 'web') {
         try {
           await initializeDatabase();
@@ -101,23 +127,33 @@ export default function RootLayout() {
       }
       setDbReady(true);
     };
+
     void setupDatabase();
   }, []);
 
   if (!dbReady) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0D1B2A' }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#0D1B2A',
+        }}
+      >
         <ActivityIndicator size="large" color="#FF6B6B" />
-        <Text style={{ color: '#FFF9F0', marginTop: 12, fontSize: 15 }}>Loading Trip Planner...</Text>
+        <Text style={{ color: '#FFF9F0', marginTop: 12 }}>
+          Loading Trip Planner...
+        </Text>
       </View>
     );
   }
 
   return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <RootLayoutNav />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
-
-const styles = StyleSheet.create({});

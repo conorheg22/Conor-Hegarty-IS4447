@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { NavDrawer } from '../components/NavDrawer';
 import { useTheme } from '../context/ThemeContext';
 
-export default function HomeScreen() {
+export default function SettingsScreen() {
   const scheme = useColorScheme();
   const theme = Colors[scheme];
   const { mode, setMode } = useTheme();
@@ -14,11 +14,11 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1 }}>
       <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <Text style={[styles.title, { color: theme.text }]}>Trip Planner</Text>
-        <Text style={[styles.subtitle, { color: theme.subtext }]}>Settings</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
 
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Appearance</Text>
+
           <View style={styles.toggleRow}>
             {(['light', 'dark', 'system'] as const).map((m) => (
               <Pressable
@@ -33,7 +33,7 @@ export default function HomeScreen() {
                 onPress={() => void setMode(m)}
               >
                 <Text style={[styles.toggleText, { color: mode === m ? '#fff' : theme.text }]}>
-                  {m === 'light' ? '☀️ Light' : m === 'dark' ? '🌙 Dark' : '⚙️ System'}
+                  {m}
                 </Text>
               </Pressable>
             ))}
@@ -42,14 +42,13 @@ export default function HomeScreen() {
 
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Account</Text>
-          <Pressable
-            style={styles.dangerBtn}
-            onPress={() => router.push('/delete-profile')}
-          >
+
+          <Pressable style={styles.dangerBtn} onPress={() => router.push('/delete-profile')}>
             <Text style={styles.dangerText}>Delete Account</Text>
           </Pressable>
         </View>
       </View>
+
       <NavDrawer />
     </View>
   );
@@ -57,8 +56,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24 },
-  title: { fontSize: 28, fontWeight: '800', marginBottom: 4, marginTop: 16 },
-  subtitle: { fontSize: 15, marginBottom: 24 },
+  title: { fontSize: 26, fontWeight: '800', marginBottom: 20 },
   card: {
     borderWidth: 1,
     borderRadius: 18,

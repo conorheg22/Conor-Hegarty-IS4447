@@ -1,12 +1,12 @@
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
-    Animated,
-    Pressable,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { label: '🏷️   Categories', route: '/categories' },
   { label: '🎯   Targets', route: '/targets' },
   { label: '📊   Insights', route: '/insights' },
+  { label: '⚙️   Settings', route: '/settings' },
   { label: '🗑️   Delete Account', route: '/delete-profile' },
 ];
 
