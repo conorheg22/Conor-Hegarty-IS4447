@@ -1,50 +1,41 @@
-# Welcome to your Expo app 👋
+# IS4447 – Trip Planner & Activity Tracker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**Student:** Conor Hegarty  
+**Student Number:** 122489434  
+**Module:** IS4447 Mobile App Development  
+**Option:** Option B – Holiday / Trip Planner
 
-## Get started
+## Expo Go Link
 
-1. Install dependencies
+**Preview Link:**  
+https://expo.dev/preview/update?message=Final+submission&updateRuntimeVersion=1.0.0&createdAt=2026-04-23T19%3A58%3A59.369Z&slug=exp&projectId=f296f8f4-c960-40fb-a7c0-ee05b7a55110&group=5c82d057-c70a-4d45-ae48-eda839ef4e58
 
-   ```bash
-   npm install
-   ```
+Open this link on your phone or paste it into Expo Go to preview the app.
 
-2. Start the app
+**Note for marker:** Open the link above on a mobile device with Expo Go installed.  
+Compatible with iOS and Android.
 
-   ```bash
-   npx expo start
-   ```
+## GitHub Repository
 
-In the output, you'll find options to open the app in a
+https://github.com/conorheg22/Conor-Hegarty-IS4447
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Setup Instructions
 
-## Get a fresh project
+### Prerequisites
+- Node.js installed
+- Expo Go app installed on your phone
 
-When you're ready, run:
+### Install dependencies
+npm install
 
-```bash
-npm run reset-project
-```
+### Run the app
+npx expo start
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Scan the QR code in the terminal with Expo Go.
 
-## Learn more
+### Seed the database
+The seed script runs automatically on first launch via the app layout file.
+Sample data is pre-populated across trips, categories, activities, and targets on first run.
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Register a new account on the login screen to get started.

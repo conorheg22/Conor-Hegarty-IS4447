@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from './db';
-import { activities, categories, targets, trips } from './schema';
+import { activities, categories, targets, trips, users } from './schema';
 
 export async function seedDatabase() {
   try {
@@ -9,6 +9,15 @@ export async function seedDatabase() {
   } catch {
     return;
   }
+
+  await db.insert(users).values([
+    { 
+      id: 1, 
+      username: 'testuser', 
+      passwordHash: 'password123', 
+      createdAt: new Date().toISOString() 
+    },
+  ]).onConflictDoNothing();
 
   await db.insert(trips).values([
     { id: 1, name: 'Paris Trip', startDate: '2026-06-10', endDate: '2026-06-17' },
@@ -36,5 +45,6 @@ export async function seedDatabase() {
 
   try {
     await AsyncStorage.setItem('dbSeeded', 'true');
+    await AsyncStorage.setItem('theme', 'light');
   } catch {}
 }
