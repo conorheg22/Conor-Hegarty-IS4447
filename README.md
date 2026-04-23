@@ -38,4 +38,9 @@ Scan the QR code in the terminal with Expo Go.
 The seed script runs automatically on first launch via the app layout file.
 Sample data is pre-populated across trips, categories, activities, and targets on first run.
 
-Register a new account on the login screen to get started.s
+### Test credentials
+No pre-seeded account is required. Simply register a new account on the 
+login screen to get started. Registration takes under 30 seconds.
+
+All sample trips, activities, categories, and targets will be visible 
+immediately after registering.
