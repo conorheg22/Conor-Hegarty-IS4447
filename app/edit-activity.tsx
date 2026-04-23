@@ -1,3 +1,6 @@
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { eq } from 'drizzle-orm';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -11,15 +14,12 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { eq } from 'drizzle-orm';
 import { db } from '../db/db';
 import {
   activities as activitiesTable,
   categories as categoriesTable,
   trips as tripsTable,
 } from '../db/schema';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/Colors';
 
 type Trip = typeof tripsTable.$inferSelect;
 type Category = typeof categoriesTable.$inferSelect;

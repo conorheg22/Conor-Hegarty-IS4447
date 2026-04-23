@@ -43,7 +43,7 @@ export default function TargetsScreen() {
   const [targetList, setTargetList] = useState<TargetRow[]>([]);
   const [progressMap, setProgressMap] = useState<ProgressMap>({});
 
-  // ✅ SIMPLE NOTIFICATION FUNCTION
+  // SIMPLE NOTIFICATION FUNCTION
   async function triggerNotification(message: string) {
     await Notifications.scheduleNotificationAsync({
       content: {

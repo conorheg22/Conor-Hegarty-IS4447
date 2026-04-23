@@ -141,7 +141,7 @@ export default function ActivitiesScreen() {
 
           ListHeaderComponent={
             <>
-              {/* 🔥 SPACING FIX */}
+              {/* SPACING */}
               <View style={{ height: 12 }} />
 
               {/* SEARCH */}
@@ -250,7 +250,7 @@ export default function ActivitiesScreen() {
                     {(item.categoryEmoji ?? '') + ' ' + item.categoryName}
                   </Text>
 
-                  {/* 🔥 FIXED VISIBILITY */}
+                  {/* VISIBILITY */}
                   <Text style={styles.primaryMeta}>{item.date}</Text>
                   <Text style={styles.primaryMeta}>{item.duration} mins</Text>
 

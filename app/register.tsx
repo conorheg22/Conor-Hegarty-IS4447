@@ -1,3 +1,7 @@
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { eq } from 'drizzle-orm';
+import { CryptoDigestAlgorithm, digestStringAsync } from 'expo-crypto';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -10,13 +14,9 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { digestStringAsync, CryptoDigestAlgorithm } from 'expo-crypto';
-import { eq } from 'drizzle-orm';
+import { useAuth } from '../context/AuthContext';
 import { db } from '../db/db';
 import { users } from '../db/schema';
-import { useAuth } from '../context/AuthContext';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/Colors';
 
 export default function RegisterScreen() {
   const router = useRouter();

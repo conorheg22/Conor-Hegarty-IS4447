@@ -134,7 +134,7 @@ export default function TripsScreen() {
                 {item.name}
               </Text>
 
-              {/* ✅ WEATHER */}
+              {/*  WEATHER */}
               <Text style={{ color: theme.subtext, marginBottom: 8 }}>
                 🌤 Weather: {weatherMap[item.id] || 'Loading...'}
               </Text>

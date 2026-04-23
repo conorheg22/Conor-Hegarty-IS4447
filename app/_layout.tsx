@@ -1,4 +1,6 @@
+import type { NotificationHandler } from 'expo-notifications';
 import * as Notifications from 'expo-notifications';
+
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -14,14 +16,16 @@ import { ThemeProvider } from '../context/ThemeContext';
 import { initializeDatabase } from '../db/db';
 import { seedDatabase } from '../db/seed';
 
-/* 🔥 OPTIONAL: ensures notifications behave properly */
-Notifications.setNotificationHandler({
+/* Notification Handler (no TS errors) */
+const notificationHandler: NotificationHandler = {
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
-});
+};
+
+Notifications.setNotificationHandler(notificationHandler);
 
 function RootLayoutNav() {
   const { userId, isLoading, logout } = useAuth();
@@ -106,7 +110,6 @@ function RootLayoutNav() {
           ) {
             return null;
           }
-
           return <BackToTripsButton />;
         },
 
@@ -137,9 +140,11 @@ function RootLayoutNav() {
           ) : null,
       }}
     >
+      {/* AUTH */}
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="register" options={{ headerShown: false }} />
 
+      {/* MAIN */}
       <Stack.Screen name="trips" options={{ title: 'Trip Planner' }} />
       <Stack.Screen name="activities" options={{ title: 'Activities' }} />
       <Stack.Screen name="categories" options={{ title: 'Categories' }} />
@@ -147,6 +152,7 @@ function RootLayoutNav() {
       <Stack.Screen name="insights" options={{ title: 'Insights' }} />
       <Stack.Screen name="settings" options={{ title: 'Settings' }} />
 
+      {/* CRUD */}
       <Stack.Screen name="add-trip" options={{ title: 'Add Trip' }} />
       <Stack.Screen name="edit-trip" options={{ title: 'Edit Trip' }} />
       <Stack.Screen name="add-activity" options={{ title: 'Add Activity' }} />
@@ -155,6 +161,7 @@ function RootLayoutNav() {
       <Stack.Screen name="edit-category" options={{ title: 'Edit Category' }} />
       <Stack.Screen name="add-target" options={{ title: 'Add Target' }} />
 
+      {/* ACCOUNT */}
       <Stack.Screen
         name="delete-profile"
         options={{ title: 'Delete Account' }}
@@ -182,7 +189,7 @@ export default function RootLayout() {
     void setupDatabase();
   }, []);
 
-  /* 🔥 NOTIFICATIONS SETUP */
+  /* NOTIFICATION PERMISSIONS */
   useEffect(() => {
     async function setupNotifications() {
       const { status } = await Notifications.requestPermissionsAsync();

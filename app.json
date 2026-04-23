@@ -2,16 +2,25 @@
   "expo": {
     "name": "TripPlannerApp",
     "slug": "TripPlannerApp",
-    "scheme": "tripplannerapp",
     "version": "1.0.0",
     "orientation": "portrait",
+    "scheme": "tripplannerapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
-    "android": {},
-    "web": {},
-    "plugins": ["expo-router"]
+    "android": {
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
   }
 }

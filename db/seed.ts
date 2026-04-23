@@ -16,9 +16,9 @@ export async function seedDatabase() {
   ]).onConflictDoNothing();
 
   await db.insert(categories).values([
-    { id: 1, name: 'Sightseeing', color: '#3B82F6' },
-    { id: 2, name: 'Food', color: '#EF4444' },
-    { id: 3, name: 'Outdoor', color: '#10B981' },
+    { id: 1, name: 'Sightseeing', color: '#3B82F6', emoji: '📸' },
+    { id: 2, name: 'Food', color: '#EF4444', emoji: '🍽️' },
+    { id: 3, name: 'Outdoor', color: '#10B981', emoji: '🌿' },
   ]).onConflictDoNothing();
 
   await db.insert(activities).values([

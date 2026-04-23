@@ -1,3 +1,6 @@
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { eq } from 'drizzle-orm';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -8,11 +11,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { eq } from 'drizzle-orm';
 import { db } from '../db/db';
 import { trips } from '../db/schema';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/Colors';
 
 export default function EditTripScreen() {
   const router = useRouter();
